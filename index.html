@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sydney Tourism</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header">
+            <img class="header-logo" src="img/sydney.jpg" alt="Sydney Opera House">
+            <h1 class="header-title">Visit Sydney</h1>
+            <a id="menu" class="header-menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z"/>
+            </svg>
+            </a>
+        </div>
+    </header>
+    <hr>
+    <div class="container">
+        <div class="list-box">
+            <h4>Attractions:</h4>
+            <div id="filter">
+                <select id="filter-input" data-bind="foreach: filterList, value: filterValue">
+                    <option data-bind="value: $data.id, text: $data.category"></option>
+                </select>
+                <input id="filter-button" type="button" value="Filter" data-bind="click: $root.filterLocations">
+            </div>
+            <ul data-bind="foreach: locationList">
+                <li data-bind="text: $data.name, click: $parent.changeLocation"></li> 
+            </ul>
+            <div>
+                <h4>Wikipedia Info link:
+                <a id="wiki-link" data-bind="text: wikipediaItem, attr: { href: wikipediaLink }"></a>
+            </div>
+        </div>
+        <div id="map"></div>
+    </div>
+    <script src="js/lib/knockout-3.2.0.js"></script>
+    <script src=
+        "https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBvG4Okz9r93WKY_jfmjREQVEJZxG4q1XU&v=3">
+    </script>
+    <script src="js/lib/jquery.min.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
