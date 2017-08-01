@@ -235,7 +235,7 @@ var ViewModel = function () {
         // Check to make sure the infowindow is not already opened on this marker.
         if (infowindow.marker != marker) {
 
-            getWikipediaLink(marker.title)
+            getWikipediaLink(marker.title);
 
             // Get the info about the location indicated by the marker.
             var service = new google.maps.places.PlacesService(map);
@@ -295,11 +295,55 @@ var ViewModel = function () {
         }
     }
 
+    function processTextSearch(index) {
+        //
+        // This function receives a copy of the for loop index via a closure
+        // and then returns a function to PlacesService.textSearch() that will
+        // process the textSearch result.
+        //
+        return function(results, status) {
+            var place = results[0];
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                // Create a marker per location, and put into markers array.
+                var marker = new google.maps.Marker({
+                  map:map,
+                  position: place.geometry.location,
+                  title: place.name,
+                  animation: google.maps.Animation.DROP,
+                  icon: defaultIcon,
+                  id: place.place_id
+                });
+
+                // Push the marker to our array of markers.
+                markers[index] = marker;
+
+                // Create an onclick event to open the large infowindow at each 
+                // marker.
+                markers[index].addListener('click', function() {
+                    for (var j = 0; j < markers.length; j++) {
+                        resetBounce(markers[j]);
+                    }
+                    toggleBounce(this);
+                    populateInfoWindow(index, largeInfowindow);
+                });
+
+                // Two event listeners - one for mouseover, one for mouseout,
+                // to change the colors back and forth.
+                marker.addListener('mouseover', function() {
+                    this.setIcon(highlightedIcon);
+                });
+                marker.addListener('mouseout', function() {
+                    this.setIcon(defaultIcon);
+                });
+            }
+        };
+    }
+
     //
     // Initialisation code.
     //
-    for (var i = 0; i < filterData.length; i++) {
-        self.filterList.push(filterData[i]);
+    for (var k = 0; k < filterData.length; k++) {
+        self.filterList.push(filterData[k]);
     }
 
     // Constructor creates a new map - only center and zoom are required.
@@ -336,43 +380,7 @@ var ViewModel = function () {
         placesService.textSearch({
           query: title,
           bounds: bounds
-        }, ( function(iCopy) {
-            return function(results, status) {
-                var place = results[0];
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    // Create a marker per location, and put into markers array.
-                    var marker = new google.maps.Marker({
-                      map:map,
-                      position: place.geometry.location,
-                      title: place.name,
-                      animation: google.maps.Animation.DROP,
-                      icon: defaultIcon,
-                      id: place.place_id
-                    });
-
-                    // Push the marker to our array of markers.
-                    markers[iCopy] = marker;
-
-                    // Create an onclick event to open the large infowindow at each marker.
-                    markers[iCopy].addListener('click', function() {
-                        for (var j = 0; j < markers.length; j++) {
-                            resetBounce(markers[j]);
-                        }
-                        toggleBounce(this);
-                        populateInfoWindow(iCopy, largeInfowindow);
-                    });
-
-                    // Two event listeners - one for mouseover, one for mouseout,
-                    // to change the colors back and forth.
-                    marker.addListener('mouseover', function() {
-                        this.setIcon(highlightedIcon);
-                    });
-                    marker.addListener('mouseout', function() {
-                        this.setIcon(defaultIcon);
-                    });
-                }
-            }
-        }) (i));
+        }, ( processTextSearch )(i));
     }
 };
 
