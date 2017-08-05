@@ -39,11 +39,12 @@
         <div id="map"></div>
     </div>
     <script src="js/lib/knockout-3.2.0.js"></script>
-    <script src=
-        "https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBvG4Okz9r93WKY_jfmjREQVEJZxG4q1XU&v=3">
-    </script>
-    <script src="js/lib/jquery.min.js"></script>
+    <script src="js/lib/jquery-3.2.1.min.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/app.js"></script>
+    <script async defer
+        onerror="googleApiErrorHandling()" src=
+        "https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBvG4Okz9r93WKY_jfmjREQVEJZxG4q1XU&v=3&callback=initMap">
+    </script>
 </body>
 </html>

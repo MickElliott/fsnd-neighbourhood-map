@@ -95,8 +95,8 @@ var Location = function(data) {
     //
     // This function initialises a Location object from the locationData.
     //
-    this.name = ko.observable(data.name);
-    this.location = ko.observable(data.location);
+    this.name = data.name;
+    this.location = data.location;
     this.categories = data.categories;
     this.id = data.id;
 };
@@ -109,7 +109,7 @@ var ViewModel = function () {
     this.wikipediaItem = ko.observable("");
     this.wikipediaLink = ko.observable("");
     this.locationList = ko.observableArray([]);
-    this.filterList = ko.observableArray([]);
+    this.filterList = [];
     this.filterValue = ko.observable(0);
 
     // Variable declarations
@@ -136,11 +136,6 @@ var ViewModel = function () {
         //
         // This function is called from the View and changes the selected marker.
         //
-        for (var j = 0; j < markers.length; j++) {    
-            resetBounce(markers[j]);
-        }
-
-        toggleBounce(markers[loc.id]);
 
         // Populate the InfoWindow
         populateInfoWindow(loc.id, largeInfowindow);      
@@ -157,9 +152,9 @@ var ViewModel = function () {
         for (var i = 0; i < locationData.length; i++) {    
           if (locationData[i].categories.indexOf(filter) >= 0) {
               self.locationList.push(new Location(locationData[i]));
-              markers[i].setMap(map);
+              markers[i].setVisible(true);
           } else {
-              markers[i].setMap(null);
+              markers[i].setVisible(false);
           }
         }
     };
@@ -196,29 +191,20 @@ var ViewModel = function () {
             dataType : 'jsonp',
             success : viewModel.ajaxSuccess
         }).fail(function(xhr, textStatus, errorThrown) {
-          window.alert("Wikipedia request failed. " + "xhr.responseText" +
-                        "Status: " + xhr.status);
-          console.log("Text Status: " + textStatus);
-          console.log("Error Thrown: " + errorThrown);
+            viewModel.wikipediaItem("Wikipedia request failed. Error code " + 
+                                    xhr.status);
+            viewModel.wikipediaLink("");
         });
     }
 
-    function toggleBounce(marker) {
+    function bounceMarker(marker) {
         //
-        // This function toggles the BOUNCE animation of the selected marker.
+        // This function sets the BOUNCE animation of the selected marker.
         //
-        if (marker.getAnimation() !== null) {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+        var bounceTimeout = setTimeout( function() {
             marker.setAnimation(null);
-        } else {
-            marker.setAnimation(google.maps.Animation.BOUNCE);
-        }
-    }
-
-    function resetBounce(marker) {
-        //
-        // This function resets the animation of the passed marker.
-        //
-        marker.setAnimation(null);
+        }, 2000);
     }
 
     function populateInfoWindow(index, infowindow) {
@@ -230,7 +216,7 @@ var ViewModel = function () {
         var marker = markers[index];
 
         // Animate the selected marker
-        marker.animation = google.maps.Animation.BOUNCE;
+        bounceMarker(marker);
 
         // Check to make sure the infowindow is not already opened on this marker.
         if (infowindow.marker != marker) {
@@ -320,10 +306,6 @@ var ViewModel = function () {
                 // Create an onclick event to open the large infowindow at each 
                 // marker.
                 markers[index].addListener('click', function() {
-                    for (var j = 0; j < markers.length; j++) {
-                        resetBounce(markers[j]);
-                    }
-                    toggleBounce(this);
                     populateInfoWindow(index, largeInfowindow);
                 });
 
@@ -384,5 +366,15 @@ var ViewModel = function () {
     }
 };
 
-var viewModel = new ViewModel();
-ko.applyBindings(viewModel);
+function googleApiErrorHandling() {
+    //
+    // This function handles errors when the Google Maps API fails to load.
+    //
+    window.alert('Google Maps failed to load. Server may be down.');
+}
+
+var viewModel;
+function initMap() {
+    viewModel = new ViewModel();
+    ko.applyBindings(viewModel);
+}
